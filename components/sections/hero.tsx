@@ -5,15 +5,18 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useJoinWaitList } from "@/services/mutations";
 
 export function HeroSection() {
   const heroRef = useRef<HTMLDivElement>(null);
   const [email, setEmail] = useState("");
-  
+  const [showThankYou, setShowThankYou] = useState(false);
+
+  const { mutate: joinWaitList } = useJoinWaitList();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement waitlist signup logic
-    console.log("Email submitted:", email);
+    joinWaitList(email);
+    setShowThankYou(true);
   };
   
   const scrollToNextSection = () => {
@@ -68,6 +71,11 @@ export function HeroSection() {
               </Button>
             </form>
           </div>
+          {showThankYou && (
+            <div className="text-green-500 text-lg">
+              Thank you for joining the waitlist! We will notify you when we launch.
+            </div>
+          )}
         </motion.div>
         
         {/* Scroll indicator */}

@@ -1,3 +1,4 @@
+'use client'
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter as FontSans } from 'next/font/google';
@@ -6,13 +7,27 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Toaster } from '@/components/ui/toaster';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
 });
 
-export const metadata: Metadata = {
+// Create a client with default options
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
+
+const metadata: Metadata = {
   title: 'KnowYourDev - Track Your Developers, with minimum efforts',
   description: 'A simple tool with one click setup and deeper productivity insights, know what your devs are doing',
 };
@@ -34,10 +49,12 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <Header />
-          <main>{children}</main>
-          <Footer />
-          <Toaster />
+          <QueryClientProvider client={queryClient}>
+            <Header />
+            <main>{children}</main>
+            <Footer />
+            <Toaster />
+          </QueryClientProvider>
         </ThemeProvider>
       </body>
     </html>

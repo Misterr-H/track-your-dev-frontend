@@ -10,16 +10,17 @@ import {
   Instagram, 
   Send 
 } from "lucide-react";
+import { LogoPng } from "./ui/logo-png";
 
 export function Footer() {
   return (
     <footer className="bg-muted/40 pt-16 pb-8">
       <div className="container">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-4">
+          <div className="space-y-4 ml-4">
             <Link href="/" className="flex items-center space-x-2">
-              <LogoIcon className="h-6 w-6" />
-              <span className="font-bold text-xl">KnowYourDev</span>
+              <LogoPng />
+              {/* <span className="font-bold text-xl">KnowYourDev</span> */}
             </Link>
             <p className="text-muted-foreground max-w-xs">
               Track your developers with minimum efforts. One-click setup and deeper productivity insights.
@@ -87,7 +88,7 @@ export function Footer() {
         
         <Separator className="my-8" />
         
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground px-2">
           <p>&copy; {new Date().getFullYear()} KnowYourDev. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="#" className="hover:text-foreground transition-colors">

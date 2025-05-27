@@ -11,7 +11,7 @@ export function HowItWorks() {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Set up developer tracking in seconds, not hours. It's really that simple.
+            Set up developer tracking in seconds, not hours. It&apos;s really that simple.
           </p>
         </div>
         
@@ -58,7 +58,7 @@ export function HowItWorks() {
               <h3 className="text-2xl font-bold mb-2">Step 2</h3>
               <p className="text-xl mb-4">Done, Yeah 🎉</p>
               <p className="text-muted-foreground">
-                That's it! Your developer productivity insights start flowing in immediately.
+                That&apos;s it! Your developer productivity insights start flowing in immediately.
                 No configuration, no setup, no hassle.
               </p>
               
@@ -79,7 +79,7 @@ export function HowItWorks() {
             viewport={{ once: true }}
           >
             <p className="text-lg font-medium">
-              Yes, it's actually that simple. While other tools require hours of setup and training,
+              Yes, it&apos;s actually that simple. While other tools require hours of setup and training,
               KnowYourDev gets you up and running in seconds.
             </p>
           </motion.div>

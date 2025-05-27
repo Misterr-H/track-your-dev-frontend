@@ -11,6 +11,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { LogoPng } from "./ui/logo-png";
 
 const navItems = [
   { name: "Features", href: "#features" },
@@ -35,15 +36,15 @@ export function Header() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-300",
+        "sticky top-0 z-50 w-full transition-all duration-300 my-3",
         isScrolled ? "bg-background/95 backdrop-blur-sm border-b" : "bg-transparent"
       )}
     >
       <div className="container flex h-16 items-center justify-between py-4">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center space-x-2">
-            <LogoIcon className="h-6 w-6" />
-            <span className="font-bold text-xl">KnowYourDev</span>
+            <LogoPng />
+            {/* <span className="font-bold text-xl">KnowYourDev</span> */}
           </Link>
           <nav className="hidden md:flex gap-6">
             {navItems.map((item) => (
@@ -58,10 +59,13 @@ export function Header() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" className="hidden md:flex">
+          {/* <Button variant="ghost" className="hidden md:flex">
             Sign In
           </Button>
-          <Button>Get Started</Button>
+          <Button>Get Started</Button> */}
+          <Button variant="outline" className="bg-white text-black">
+            Coming Soon
+          </Button>
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
