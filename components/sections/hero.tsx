@@ -48,7 +48,7 @@ export function HeroSection() {
           className="space-y-6 max-w-4xl mx-auto"
         >
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-            Track Your Developers, with minimum efforts
+            Track Your Developers, with ZERO efforts
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
