@@ -37,7 +37,7 @@ export function TrustedBy() {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Trusted By</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Leading tech companies rely on KnowYourDev to optimize their development workflows
+            Leading tech companies rely on TrackYourDev to optimize their development workflows
           </p>
         </div>
         

@@ -89,7 +89,7 @@ export function Footer() {
         <Separator className="my-8" />
         
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground px-2">
-          <p>&copy; {new Date().getFullYear()} KnowYourDev. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} TrackYourDev. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="#" className="hover:text-foreground transition-colors">
               Terms of Service

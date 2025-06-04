@@ -80,7 +80,7 @@ export function HowItWorks() {
           >
             <p className="text-lg font-medium">
               Yes, it&apos;s actually that simple. While other tools require hours of setup and training,
-              KnowYourDev gets you up and running in seconds.
+              TrackYourDev gets you up and running in seconds.
             </p>
           </motion.div>
         </div>

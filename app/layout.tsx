@@ -28,7 +28,7 @@ const queryClient = new QueryClient({
 });
 
 const metadata: Metadata = {
-  title: 'KnowYourDev - Track Your Developers, with minimum efforts',
+  title: 'TrackYourDev - Track Your Developers, with minimum efforts',
   description: 'A simple tool with one click setup and deeper productivity insights, know what your devs are doing',
 };
 

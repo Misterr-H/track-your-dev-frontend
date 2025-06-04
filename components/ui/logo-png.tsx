@@ -1,5 +1,5 @@
 import Image from "next/image";
 
 export function LogoPng() {
-  return <Image src="/logo.png" alt="KnowYourDev" width={250} height={250} />;
+  return <Image src="/logo.png" alt="TrackYourDev" width={250} height={250} />;
 }

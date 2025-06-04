@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 
 const testimonials = [
   {
-    quote: "KnowYourDev has revolutionized how we track developer productivity. The insights are invaluable for our team planning.",
+    quote: "TrackYourDev has revolutionized how we track developer productivity. The insights are invaluable for our team planning.",
     name: "Sarah Johnson",
     role: "CTO",
     company: "TechNova Inc.",
@@ -23,14 +23,14 @@ const testimonials = [
     avatar: "https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
   },
   {
-    quote: "We've been able to identify bottlenecks and optimize workflows thanks to KnowYourDev's insightful analytics.",
+    quote: "We've been able to identify bottlenecks and optimize workflows thanks to TrackYourDev's insightful analytics.",
     name: "Emily Rodriguez",
     role: "VP of Engineering",
     company: "Elevate Solutions",
     avatar: "https://images.pexels.com/photos/2613260/pexels-photo-2613260.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
   },
   {
-    quote: "The ROI was immediate. Within weeks of implementing KnowYourDev, we saw a 20% increase in developer productivity.",
+    quote: "The ROI was immediate. Within weeks of implementing TrackYourDev, we saw a 20% increase in developer productivity.",
     name: "David Lee",
     role: "Director of Engineering",
     company: "FutureTech",
@@ -72,7 +72,7 @@ export function Testimonials() {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Customers Say</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            See how KnowYourDev is transforming development teams around the world
+            See how TrackYourDev is transforming development teams around the world
           </p>
         </div>
         
