@@ -59,6 +59,7 @@ export default function RootLayout({
             <Toaster />
           </QueryClientProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
