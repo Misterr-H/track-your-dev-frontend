@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 import { LogoPng } from "./ui/logo-png";
 
+
 export function Footer() {
   return (
-    <footer className="bg-muted/40 pt-16 pb-8">
+    <footer className="bg-muted/40 pt-16 pb-8 flex flex-col items-center">
       <div className="container">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4 ml-4">

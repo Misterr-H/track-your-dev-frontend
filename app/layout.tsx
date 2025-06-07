@@ -8,6 +8,8 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Analytics } from "@vercel/analytics/next"
+import Clarity from '@microsoft/clarity'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -37,6 +39,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  Clarity.init('rvr9r43lu1');
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <body className={cn(
