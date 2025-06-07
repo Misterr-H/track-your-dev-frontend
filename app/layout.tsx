@@ -2,6 +2,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter as FontSans } from 'next/font/google';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Header } from '@/components/header';
@@ -37,6 +38,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isDashboard = pathname === '/dashboard';
+
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <body className={cn(
@@ -50,9 +54,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryClientProvider client={queryClient}>
-            <Header />
+            {!isDashboard && <Header />}
             <main>{children}</main>
-            <Footer />
+            {!isDashboard && <Footer />}
             <Toaster />
           </QueryClientProvider>
         </ThemeProvider>
