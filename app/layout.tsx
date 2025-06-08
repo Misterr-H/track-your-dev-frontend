@@ -1,6 +1,5 @@
 'use client'
 import './globals.css';
-import type { Metadata } from 'next';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -10,6 +9,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Analytics } from "@vercel/analytics/next"
 import Clarity from '@microsoft/clarity'
+import metadata from './metadata'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -28,11 +28,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-const metadata: Metadata = {
-  title: 'TrackYourDev - Track Your Developers, with minimum efforts',
-  description: 'A simple tool with one click setup and deeper productivity insights, know what your devs are doing',
-};
 
 export default function RootLayout({
   children,
