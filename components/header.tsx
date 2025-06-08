@@ -15,7 +15,7 @@ import { LogoPng } from "./ui/logo-png";
 
 const navItems = [
   { name: "Discord", href: "https://discord.gg/rtGrJ2n2Gz" },
-  { name: "How It Works", href: "#how-it-works" },
+  { name: "How It Works", href: "https://medium.com/@hs913271/whats-broken-with-today-s-agile-tools-and-how-trackyourdev-fixes-them-6386106d14b3" },
   { name: "GitHub", href: "https://github.com/TrackYourDev" },
   { name: "Twitter/X", href: "https://x.com/trackyourdev" },
 ];
