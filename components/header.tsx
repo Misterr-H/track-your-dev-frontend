@@ -14,10 +14,10 @@ import {
 import { LogoPng } from "./ui/logo-png";
 
 const navItems = [
-  { name: "Features", href: "#features" },
+  { name: "Discord", href: "https://discord.gg/rtGrJ2n2Gz" },
   { name: "How It Works", href: "#how-it-works" },
-  { name: "Pricing", href: "#pricing" },
-  { name: "Testimonials", href: "#testimonials" },
+  { name: "GitHub", href: "https://github.com/TrackYourDev" },
+  { name: "Twitter/X", href: "https://x.com/trackyourdev" },
 ];
 
 export function Header() {
