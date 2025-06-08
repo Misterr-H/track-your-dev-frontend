@@ -6,7 +6,6 @@ export async function GET(request: NextRequest) {
     // Extract token from HTTP-only cookie
     const githubToken = request.cookies.get('github_token')?.value;
 
-    console.log(githubToken);
 
     if (!githubToken) {
         return NextResponse.json({ authenticated: false }, { status: 401 });
@@ -21,10 +20,10 @@ export async function GET(request: NextRequest) {
             }
         });
 
-        console.log(response);
         
         if (response.ok) {
             const userData = await response.json();
+            
             return NextResponse.json({ 
                 authenticated: true, 
                 user: userData 

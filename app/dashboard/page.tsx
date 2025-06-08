@@ -6,6 +6,7 @@ import { ProjectCards, Project } from '@/components/ProjectCards';
 import { ProjectTasksTimeline, Task } from '@/components/ProjectTasksTimeline';
 import { Button } from '@/components/ui/button';
 import { Bell, Pen, Smartphone, Box, Globe, Server } from 'lucide-react';
+import { PlanSprintModal } from '@/components/PlanSprintModal';
 
 const projects: Project[] = [
   { name: 'kydev-frontend', category: 'Website' },
@@ -19,6 +20,7 @@ function Dashboard() {
   const [shortcutLabel, setShortcutLabel] = useState('');
   const [isMac, setIsMac] = useState(false);
   const [taskView, setTaskView] = useState<'technical' | 'non-technical'>('technical');
+  const [isPlanSprintOpen, setIsPlanSprintOpen] = useState(false);
 
   // Detect platform for shortcut label
   React.useEffect(() => {
@@ -58,8 +60,7 @@ function Dashboard() {
   }, [isMac]);
 
   function handlePlanSprintShortcut() {
-    // TODO: Open your Plan a sprint modal or trigger your mechanism here
-    alert('Plan a sprint shortcut triggered!');
+    setIsPlanSprintOpen(true);
   }
 
   // Mock tasks for demonstration
@@ -176,7 +177,7 @@ function Dashboard() {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <main className="flex-1 min-h-screen bg-[#101011] text-white p-0 flex flex-col">
+      <main className="flex-1 min-h-screen bg-[#101011] text-white p-0 flex flex-col relative">
         {/* Mini bar */}
         <div className="flex justify-end items-center h-16 px-8 border-b border-neutral-800">
           <Button variant="ghost" size="icon" className="text-white mr-2">
@@ -205,7 +206,10 @@ function Dashboard() {
             onEditTask={taskId => alert('Edit task: ' + taskId)}
           />
         </div>
-        {/* Main dashboard content can go here */}
+        <PlanSprintModal 
+          isOpen={isPlanSprintOpen} 
+          onClose={() => setIsPlanSprintOpen(false)} 
+        />
       </main>
     </div>
   );
