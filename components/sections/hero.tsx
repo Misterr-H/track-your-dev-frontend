@@ -65,7 +65,7 @@ export function HeroSection() {
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
             <Button onClick={() => {
-              window.open(`https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}&scope=user:email&state=abc`, "_blank");
+              window.open(`https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}&scope=user:email&state=abc`, "_self");
             }} size="lg" className="text-lg group">
               <Github className="mr-2 h-5 w-5" />
               Use it now (10s)

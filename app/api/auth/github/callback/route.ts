@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
     });
-
+    // Return the response with redirect
     return response;
 
   } catch (error) {
