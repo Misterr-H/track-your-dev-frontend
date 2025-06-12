@@ -1,1 +1,1 @@
-export const baseUrl = "https://track-your-dev-backend-production.up.railway.app";
+export const baseUrl = "http://localhost:8080";

@@ -5,22 +5,42 @@ import Sidebar from '@/components/sidebar';
 import { ProjectCards, Project } from '@/components/ProjectCards';
 import { ProjectTasksTimeline, Task } from '@/components/ProjectTasksTimeline';
 import { Button } from '@/components/ui/button';
-import { Bell, Pen, Smartphone, Box, Globe, Server } from 'lucide-react';
+import { Bell, Pen } from 'lucide-react';
 import { PlanSprintModal } from '@/components/PlanSprintModal';
-
-const projects: Project[] = [
-  { name: 'kydev-frontend', category: 'Website' },
-  { name: 'kydev-backend', category: 'Backend' },
-  { name: 'mobile-app', category: 'Mobile App' },
-  { name: 'crm-tool', category: 'CRM' },
-];
+import { useOrgsAndRepos } from '@/services/queries';
+import { AppStore, setSelectedOrg } from '@/lib/store';
+import { useStoreState } from 'pullstate';
 
 function Dashboard() {
+  const { data, isLoading } = useOrgsAndRepos();
   const [selected, setSelected] = useState(0);
   const [shortcutLabel, setShortcutLabel] = useState('');
   const [isMac, setIsMac] = useState(false);
   const [taskView, setTaskView] = useState<'technical' | 'non-technical'>('technical');
   const [isPlanSprintOpen, setIsPlanSprintOpen] = useState(false);
+  const selectedOrg = useStoreState(AppStore, s => s.selectedOrg);
+
+  // Convert repositories to projects based on selected organization
+  const projects: Project[] = React.useMemo(() => {
+    if (!data?.data?.results) return [];
+    
+    const orgData = data.data.results.find(result => result.organization.name === selectedOrg);
+    if (!orgData?.repositories) return [];
+    
+    return orgData.repositories.map(repo => ({
+      name: repo.name,
+      category: '' // Leaving category blank as requested
+    }));
+  }, [data, selectedOrg]);
+
+  // Reset selected project when organization changes
+  React.useEffect(() => {
+    if (projects.length > 0) {
+      setSelected(0); // Select first project by default
+    } else {
+      setSelected(-1); // No project selected when array is empty
+    }
+  }, [selectedOrg, projects]);
 
   // Detect platform for shortcut label
   React.useEffect(() => {
@@ -33,7 +53,7 @@ function Dashboard() {
     }
   }, []);
 
-  // Keyboard navigation for project cards and Plan a sprint shortcut
+  // Keyboard navigation for project cards, org switching, and Plan a sprint shortcut
   React.useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
@@ -43,12 +63,32 @@ function Dashboard() {
       ) {
         return;
       }
+
+      const orgs = data?.data?.results || [];
+      const currentOrgIndex = orgs.findIndex(org => org.organization.name === selectedOrg);
+
+      // Organization switching with Cmd/Ctrl + Arrow Up/Down
+      if ((isMac && e.metaKey) || (!isMac && e.ctrlKey)) {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (currentOrgIndex > 0) {
+            setSelectedOrg(orgs[currentOrgIndex - 1].organization.name);
+          }
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (currentOrgIndex < orgs.length - 1) {
+            setSelectedOrg(orgs[currentOrgIndex + 1].organization.name);
+          }
+        }
+      }
+
       // Project navigation
       if (e.key === 'ArrowLeft') {
         setSelected((prev) => (prev > 0 ? prev - 1 : prev));
       } else if (e.key === 'ArrowRight') {
         setSelected((prev) => (prev < projects.length - 1 ? prev + 1 : prev));
       }
+
       // Plan a sprint shortcut
       if ((isMac && e.metaKey && e.key.toLowerCase() === 'p') || (!isMac && e.ctrlKey && e.key.toLowerCase() === 'p')) {
         e.preventDefault();
@@ -57,7 +97,7 @@ function Dashboard() {
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMac]);
+  }, [isMac, projects.length, data, selectedOrg]);
 
   function handlePlanSprintShortcut() {
     setIsPlanSprintOpen(true);
@@ -194,7 +234,11 @@ function Dashboard() {
           </Button>
         </div>
         {/* Project cards row */}
-        <ProjectCards projects={projects} selected={selected} setSelected={setSelected} />
+        {isLoading ? (
+          <div className="px-8 py-6 text-neutral-400">Loading projects...</div>
+        ) : (
+          <ProjectCards projects={projects} selected={selected} setSelected={setSelected} />
+        )}
         {/* Project tasks timeline */}
         <div className="flex-1 overflow-y-auto">
           <ProjectTasksTimeline

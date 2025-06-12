@@ -1,17 +1,35 @@
 import React from "react";
 import { LogoIcon } from "@/components/ui/logo";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Settings, User } from "lucide-react";
-
-const organizations = [
-  { name: "trackyourdev" },
-  { name: "know-your-dev" },
-  { name: "dummy-org" },
-];
+import { Search, Plus, Settings, User, ArrowUp, ArrowDown } from "lucide-react";
+import { useOrgsAndRepos } from "@/services/queries";
+import { Organization } from "@/types/dashboard";
+import { AppStore, setSelectedOrg } from "@/lib/store";
+import { useStoreState } from 'pullstate';
 
 export default function Sidebar() {
-  const [selectedOrg, setSelectedOrg] = React.useState(organizations[0].name);
+  const { data, isLoading } = useOrgsAndRepos();
+  const selectedOrg = useStoreState(AppStore, s => s.selectedOrg);
+  const [isMac, setIsMac] = React.useState(false);
+
+  // Set initial selected org when data loads
+  React.useEffect(() => {
+    const results = data?.data?.results;
+    if (results && results.length > 0 && !selectedOrg) {
+      setSelectedOrg(results[0].organization.name);
+    }
+  }, [data, selectedOrg]);
+
+  // Detect platform for shortcut label
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const mac =
+        navigator.platform.toLowerCase().includes('mac') ||
+        navigator.userAgent.toLowerCase().includes('mac');
+      setIsMac(mac);
+    }
+  }, []);
 
   return (
     <aside className="h-screen w-64 bg-black text-white flex flex-col border-r border-neutral-800">
@@ -20,21 +38,40 @@ export default function Sidebar() {
         <LogoIcon className="w-8 h-8 bg-blue-600 rounded-md p-1" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="px-2 py-1 text-[11px] font-semibold flex items-center gap-1 text-white hover:bg-neutral-900 focus:bg-neutral-900">
-              <span className="truncate max-w-[100px]">{selectedOrg}</span>
+            <Button 
+              variant="ghost" 
+              className="px-2 py-1 text-[11px] font-semibold flex items-center gap-1 text-white hover:bg-neutral-900 focus:bg-neutral-900 focus:outline-none focus:ring-0"
+              tabIndex={-1}
+              onKeyDown={(e) => {
+                // Prevent default keyboard navigation
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                }
+              }}
+            >
+              <span className="truncate max-w-[100px]">{isLoading ? "Loading..." : selectedOrg}</span>
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="ml-1"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-neutral-900 border-neutral-800 text-white">
-            {organizations.map((org) => (
+            {data?.data?.results?.map((result) => (
               <DropdownMenuItem
-                key={org.name}
-                onClick={() => setSelectedOrg(org.name)}
-                className={selectedOrg === org.name ? "bg-neutral-800" : ""}
+                key={result.organization.id}
+                onClick={() => setSelectedOrg(result.organization.name)}
+                className={selectedOrg === result.organization.name ? "bg-neutral-800" : ""}
               >
-                {org.name}
+                {result.organization.name}
               </DropdownMenuItem>
             ))}
+            <DropdownMenuSeparator className="bg-neutral-800" />
+            <div className="px-2 py-1.5 text-xs text-neutral-400 flex items-center gap-1">
+              <span className="font-medium">{isMac ? '⌘' : 'Ctrl'}</span>
+              <span className="flex items-center gap-0.5">
+                <ArrowUp className="w-3 h-3" />
+                <ArrowDown className="w-3 h-3" />
+              </span>
+              <span>to switch orgs</span>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
         <div className="flex-1" />
@@ -51,8 +88,6 @@ export default function Sidebar() {
         <SidebarOption icon={<Settings className="w-5 h-5" />} label="Settings" />
         <SidebarOption icon={<Search className="w-5 h-5" />} label="Search" />
         <SidebarOption icon={<Plus className="w-5 h-5" />} label="Create" />
-        {/* <SidebarOption icon={<LogoIcon className="w-5 h-5" />} label="Dashboard" /> */}
-        {/* Add more dummy options as needed */}
       </nav>
       <div className="px-4 py-4 border-t border-neutral-800 text-xs text-neutral-400">© 2025 TrackYourDev</div>
     </aside>

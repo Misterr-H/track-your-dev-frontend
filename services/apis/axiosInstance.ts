@@ -3,4 +3,5 @@ import { baseUrl } from "./baseUrl";
 
 export const axiosInstance = axios.create({
   baseURL: baseUrl,
+  withCredentials: true,
 });
