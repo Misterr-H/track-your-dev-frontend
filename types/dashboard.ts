@@ -43,4 +43,33 @@ export interface DashboardResponse {
     failedResults: any[]; // You might want to type this more specifically if needed
     stats: DashboardStats;
   };
+}
+
+export interface CommitSummary {
+  filename: string;
+  summary: string;
+}
+
+export interface Commit {
+  _id: string;
+  commitMessage: string;
+  commitTime: string;
+  additions: number;
+  deletions: number;
+  changes: number;
+  summaries: CommitSummary[];
+  tasks: string[];
+  author: string;
+}
+
+export interface TaskResponse {
+  success: boolean;
+  message: string;
+  data: {
+    commits: Commit[];
+    totalCommits: number;
+    page: number;
+    pageSize: number;
+    source: 'database' | 'github';
+  };
 } 

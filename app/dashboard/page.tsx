@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/sidebar';
 import { ProjectCards, Project } from '@/components/ProjectCards';
 import { ProjectTasksTimeline, Task } from '@/components/ProjectTasksTimeline';
@@ -10,6 +10,9 @@ import { PlanSprintModal } from '@/components/PlanSprintModal';
 import { useOrgsAndRepos } from '@/services/queries';
 import { AppStore, setSelectedOrg } from '@/lib/store';
 import { useStoreState } from 'pullstate';
+import { fetchTasks } from '@/services/apis/dashboardApis';
+import { isProjectTasksEnabled, toggleProjectTasks } from '@/lib/projectPreferences';
+import { Commit } from '@/types/dashboard';
 
 function Dashboard() {
   const { data, isLoading } = useOrgsAndRepos();
@@ -19,6 +22,10 @@ function Dashboard() {
   const [taskView, setTaskView] = useState<'technical' | 'non-technical'>('technical');
   const [isPlanSprintOpen, setIsPlanSprintOpen] = useState(false);
   const selectedOrg = useStoreState(AppStore, s => s.selectedOrg);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
 
   // Convert repositories to projects based on selected organization
   const projects: Project[] = React.useMemo(() => {
@@ -32,6 +39,62 @@ function Dashboard() {
       category: '' // Leaving category blank as requested
     }));
   }, [data, selectedOrg]);
+
+  const selectedProject = projects[selected]?.name;
+  const isTasksEnabled = selectedProject ? isProjectTasksEnabled(selectedOrg, selectedProject) : false;
+
+  const loadTasks = useCallback(async (page: number) => {
+    if (!selectedProject || !isTasksEnabled) return;
+    
+    setIsLoadingTasks(true);
+    try {
+      const response = await fetchTasks(selectedOrg, selectedProject, {
+        page,
+        pageSize: 5
+      });
+      
+      const newTasks = response.data.commits.map((commit: Commit) => ({
+        id: commit._id,
+        title: commit.commitMessage,
+        description: commit.summaries.map(s => s.summary).join('\n'),
+        timestamp: commit.commitTime,
+        developer: { name: commit.author, avatarUrl: '' },
+        type: 'technical' as const,
+        project: selectedProject,
+      }));
+
+      setTasks(prev => page === 1 ? newTasks : [...prev, ...newTasks]);
+      setHasMore(newTasks.length === 5);
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+    } finally {
+      setIsLoadingTasks(false);
+    }
+  }, [selectedOrg, selectedProject, isTasksEnabled]);
+
+  // Load initial tasks when project is selected or tasks are enabled
+  useEffect(() => {
+    setCurrentPage(1);
+    setTasks([]);
+    if (isTasksEnabled) {
+      loadTasks(1);
+    }
+  }, [selectedProject, isTasksEnabled, loadTasks]);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight * 1.5 && !isLoadingTasks && hasMore) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      loadTasks(nextPage);
+    }
+  }, [currentPage, isLoadingTasks, hasMore, loadTasks]);
+
+  const handleToggleTasks = () => {
+    if (selectedProject) {
+      toggleProjectTasks(selectedOrg, selectedProject);
+    }
+  };
 
   // Reset selected project when organization changes
   React.useEffect(() => {
@@ -103,117 +166,6 @@ function Dashboard() {
     setIsPlanSprintOpen(true);
   }
 
-  // Mock tasks for demonstration
-  const allTasks: Task[] = [
-    {
-      id: '1',
-      title: 'Implement login page',
-      description: 'Created a responsive login page with OAuth integration.',
-      timestamp: new Date().toISOString(),
-      developer: { name: 'Alice Smith', avatarUrl: '' },
-      type: 'technical',
-      project: 'kydev-frontend',
-    },
-    {
-      id: '2',
-      title: 'Fix API bug',
-      description: 'Resolved issue with user authentication API.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-      developer: { name: 'Bob Lee', avatarUrl: '' },
-      type: 'technical',
-      project: 'kydev-backend',
-    },
-    {
-      id: '3',
-      title: 'Sprint planning',
-      description: 'Participated in sprint planning meeting.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
-      developer: { name: 'Carol White', avatarUrl: '' },
-      type: 'non-technical',
-      project: 'kydev-frontend',
-    },
-    {
-      id: '4',
-      title: 'Release v1.2',
-      description: 'Released new version of the mobile app.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(),
-      developer: { name: 'David Kim', avatarUrl: '' },
-      type: 'technical',
-      project: 'mobile-app',
-    },
-    {
-      id: '5',
-      title: 'Client demo',
-      description: 'Presented CRM features to client.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 50).toISOString(),
-      developer: { name: 'Eva Green', avatarUrl: '' },
-      type: 'non-technical',
-      project: 'crm-tool',
-    },
-    // Newer tasks for today
-    {
-      id: '6',
-      title: 'Update dashboard UI',
-      description: 'Refactored dashboard layout and improved responsiveness.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
-      developer: { name: 'Alice Smith', avatarUrl: '' },
-      type: 'technical',
-      project: 'kydev-frontend',
-    },
-    {
-      id: '7',
-      title: 'Write documentation',
-      description: 'Added API usage documentation for new endpoints.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-      developer: { name: 'Bob Lee', avatarUrl: '' },
-      type: 'non-technical',
-      project: 'kydev-backend',
-    },
-    // Tasks from 2 days ago
-    {
-      id: '8',
-      title: 'Bug triage',
-      description: 'Reviewed and prioritized open bugs.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-      developer: { name: 'Carol White', avatarUrl: '' },
-      type: 'non-technical',
-      project: 'kydev-frontend',
-    },
-    {
-      id: '9',
-      title: 'Optimize queries',
-      description: 'Improved database query performance.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 49).toISOString(),
-      developer: { name: 'David Kim', avatarUrl: '' },
-      type: 'technical',
-      project: 'kydev-backend',
-    },
-    // Tasks from 4 days ago
-    {
-      id: '10',
-      title: 'Design review',
-      description: 'Reviewed new UI designs with the team.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 96).toISOString(),
-      developer: { name: 'Eva Green', avatarUrl: '' },
-      type: 'non-technical',
-      project: 'kydev-frontend',
-    },
-    {
-      id: '11',
-      title: 'Integrate payment gateway',
-      description: 'Integrated Stripe payment gateway for subscriptions.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 97).toISOString(),
-      developer: { name: 'Bob Lee', avatarUrl: '' },
-      type: 'technical',
-      project: 'kydev-frontend',
-    },
-  ];
-
-  const selectedProject = projects[selected]?.name;
-  const filteredTasks = allTasks.filter(
-    t => t.project === selectedProject && t.type === taskView
-  );
-
   return (
     <div className="flex h-screen">
       <Sidebar />
@@ -237,22 +189,40 @@ function Dashboard() {
         {isLoading ? (
           <div className="px-8 py-6 text-neutral-400">Loading projects...</div>
         ) : (
-          <ProjectCards projects={projects} selected={selected} setSelected={setSelected} />
+          <>
+            <ProjectCards projects={projects} selected={selected} setSelected={setSelected} />
+            {selectedProject && (
+              <div className="px-8 py-4">
+                <Button
+                  onClick={handleToggleTasks}
+                  variant={isTasksEnabled ? "destructive" : "default"}
+                  className="w-full"
+                >
+                  {isTasksEnabled ? "Turn off Tasks for this project" : "Turn on Tasks for this project"}
+                </Button>
+              </div>
+            )}
+          </>
         )}
         {/* Project tasks timeline */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
           <ProjectTasksTimeline
-            tasks={filteredTasks}
+            tasks={tasks}
             view={taskView}
             onViewChange={setTaskView}
             onJumpToDate={() => alert('Jump to a date clicked!')}
             onAddTask={() => alert('Add a task clicked!')}
             onEditTask={taskId => alert('Edit task: ' + taskId)}
           />
+          {isLoadingTasks && (
+            <div className="text-center py-4 text-neutral-400">
+              Loading more tasks...
+            </div>
+          )}
         </div>
-        <PlanSprintModal 
-          isOpen={isPlanSprintOpen} 
-          onClose={() => setIsPlanSprintOpen(false)} 
+        <PlanSprintModal
+          isOpen={isPlanSprintOpen}
+          onClose={() => setIsPlanSprintOpen(false)}
         />
       </main>
     </div>
