@@ -50,6 +50,16 @@ export interface CommitSummary {
   summary: string;
 }
 
+export interface CommitTask {
+  title: string;
+  description: string;
+}
+
+export interface CommitTasks {
+  technicalTasks: CommitTask[];
+  nonTechnicalTasks: CommitTask[];
+}
+
 export interface Commit {
   _id: string;
   commitMessage: string;
@@ -58,7 +68,7 @@ export interface Commit {
   deletions: number;
   changes: number;
   summaries: CommitSummary[];
-  tasks: string[];
+  tasks: CommitTasks;
   author: string;
 }
 

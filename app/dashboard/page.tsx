@@ -12,7 +12,7 @@ import { AppStore, setSelectedOrg } from '@/lib/store';
 import { useStoreState } from 'pullstate';
 import { fetchTasks } from '@/services/apis/dashboardApis';
 import { isProjectTasksEnabled, toggleProjectTasks } from '@/lib/projectPreferences';
-import { Commit } from '@/types/dashboard';
+import { Commit, CommitTask } from '@/types/dashboard';
 
 function Dashboard() {
   const { data, isLoading } = useOrgsAndRepos();
@@ -43,6 +43,9 @@ function Dashboard() {
   const selectedProject = projects[selected]?.name;
   const isTasksEnabled = selectedProject ? isProjectTasksEnabled(selectedOrg, selectedProject) : false;
 
+  // Filter tasks based on the current view
+  const filteredTasks = tasks.filter(task => task.type === taskView);
+
   const loadTasks = useCallback(async (page: number) => {
     if (!selectedProject || !isTasksEnabled) return;
     
@@ -53,15 +56,32 @@ function Dashboard() {
         pageSize: 5
       });
       
-      const newTasks = response.data.commits.map((commit: Commit) => ({
-        id: commit._id,
-        title: commit.commitMessage,
-        description: commit.summaries.map(s => s.summary).join('\n'),
-        timestamp: commit.commitTime,
-        developer: { name: commit.author, avatarUrl: '' },
-        type: 'technical' as const,
-        project: selectedProject,
-      }));
+      const newTasks = response.data.commits.flatMap((commit: Commit) => {
+        const tasks = commit.tasks;
+        const technicalTasks = tasks.technicalTasks;
+        const nonTechnicalTasks = tasks.nonTechnicalTasks;
+
+        return [
+          ...technicalTasks.map((task: CommitTask) => ({
+            id: `${commit._id}-technical-${task.title}`,
+            title: task.title,
+            description: task.description,
+            timestamp: commit.commitTime,
+            developer: { name: commit.author, avatarUrl: '' },
+            type: 'technical' as const,
+            project: selectedProject,
+          })),
+          ...nonTechnicalTasks.map((task: CommitTask) => ({
+            id: `${commit._id}-non-technical-${task.title}`,
+            title: task.title,
+            description: task.description,
+            timestamp: commit.commitTime,
+            developer: { name: commit.author, avatarUrl: '' },
+            type: 'non-technical' as const,
+            project: selectedProject,
+          }))
+        ];
+      });
 
       setTasks(prev => page === 1 ? newTasks : [...prev, ...newTasks]);
       setHasMore(newTasks.length === 5);
@@ -207,7 +227,7 @@ function Dashboard() {
         {/* Project tasks timeline */}
         <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
           <ProjectTasksTimeline
-            tasks={tasks}
+            tasks={filteredTasks}
             view={taskView}
             onViewChange={setTaskView}
             onJumpToDate={() => alert('Jump to a date clicked!')}
