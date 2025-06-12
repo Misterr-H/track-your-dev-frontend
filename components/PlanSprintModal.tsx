@@ -55,6 +55,7 @@ export function PlanSprintModal({ isOpen, onClose }: PlanSprintModalProps) {
             {/* Content will go here */}
             <div className="absolute inset-0 flex items-center justify-center">
               <h2 className="text-2xl font-semibold text-white">Plan a Sprint</h2>
+              <h2 className='text-neutral-400'>This section is under development</h2>
             </div>
           </motion.div>
         </motion.div>
