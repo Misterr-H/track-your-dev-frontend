@@ -56,16 +56,19 @@ export async function GET(request: NextRequest) {
     response.cookies.set('github_token', tokenData.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none', // ⚠️ if cookies must be used cross-site (across subdomains)
+      domain: '.trackyour.dev', // 👈 critical addition
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
-
+    
     response.cookies.set('user_id', userData.id.toString(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
+      domain: '.trackyour.dev',
       maxAge: 60 * 60 * 24 * 7,
     });
+    
     // Return the response with redirect
     return response;
 
