@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Pen } from 'lucide-react';
+import { Pen, Loader2 } from 'lucide-react';
 
 export type Task = {
   id: string;
@@ -24,11 +24,40 @@ type ProjectTasksTimelineProps = {
   onJumpToDate: () => void;
   onAddTask?: () => void;
   onEditTask?: (taskId: string) => void;
+  isLoading?: boolean;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 };
 
-export function ProjectTasksTimeline({ tasks, view, onViewChange, onJumpToDate, onAddTask, onEditTask }: ProjectTasksTimelineProps) {
-  // Group tasks by date label (Today, Yesterday, etc)
+export function ProjectTasksTimeline({ 
+  tasks, 
+  view, 
+  onViewChange, 
+  onJumpToDate, 
+  onAddTask, 
+  onEditTask,
+  isLoading = false,
+  onLoadMore,
+  hasMore = false
+}: ProjectTasksTimelineProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const grouped = groupTasksByDate(tasks);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !onLoadMore) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      // Load more when user scrolls to 80% of the content
+      if (scrollHeight - scrollTop <= clientHeight * 1.2 && !isLoading && hasMore) {
+        onLoadMore();
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [isLoading, hasMore, onLoadMore]);
 
   return (
     <div className="relative px-8 py-4">
@@ -84,7 +113,7 @@ export function ProjectTasksTimeline({ tasks, view, onViewChange, onJumpToDate, 
                           </div>
                         </div>
                         {/* Div B: right side */}
-                        <div className="flex flex-col items-center ml-auto min-w-[48px]  justify-center">
+                        <div className="flex flex-col items-center ml-auto min-w-[48px] justify-center">
                           <span className="text-xs text-neutral-400 whitespace-nowrap mb-1">{formatTime(task.timestamp)}</span>
                           <button
                             type="button"
@@ -102,6 +131,18 @@ export function ProjectTasksTimeline({ tasks, view, onViewChange, onJumpToDate, 
               </div>
             </div>
           ))}
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="flex justify-center items-center py-4">
+              <Loader2 className="w-6 h-6 text-primary animate-spin" />
+            </div>
+          )}
+          {/* No more tasks indicator */}
+          {!isLoading && !hasMore && tasks.length > 0 && (
+            <div className="text-center text-sm text-neutral-400 py-4">
+              No more tasks to load
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -136,6 +177,6 @@ function formatTime(iso: string) {
   return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 }
 
-function getInitials(name: string) {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase();
+function getInitials(name: string | undefined) {
+  return name?.split(' ').map(n => n[0]).join('').toUpperCase();
 } 

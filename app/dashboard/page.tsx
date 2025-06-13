@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Sidebar from '@/components/sidebar';
 import { ProjectCards, Project } from '@/components/ProjectCards';
 import { ProjectTasksTimeline, Task } from '@/components/ProjectTasksTimeline';
 import { Button } from '@/components/ui/button';
-import { Bell, Pen } from 'lucide-react';
+import { Bell, Pen, ArrowUp } from 'lucide-react';
 import { PlanSprintModal } from '@/components/PlanSprintModal';
 import { useOrgsAndRepos } from '@/services/queries';
 import { AppStore, setSelectedOrg } from '@/lib/store';
@@ -13,6 +13,7 @@ import { useStoreState } from 'pullstate';
 import { fetchTasks } from '@/services/apis/dashboardApis';
 import { isProjectTasksEnabled, toggleProjectTasks } from '@/lib/projectPreferences';
 import { Commit, CommitTask } from '@/types/dashboard';
+import { Switch } from '@/components/ui/switch';
 
 function Dashboard() {
   const { data, isLoading } = useOrgsAndRepos();
@@ -26,6 +27,8 @@ function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingTasks, setIsLoadingTasks] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Convert repositories to projects based on selected organization
   const projects: Project[] = React.useMemo(() => {
@@ -53,7 +56,7 @@ function Dashboard() {
     try {
       const response = await fetchTasks(selectedOrg, selectedProject, {
         page,
-        pageSize: 5
+        pageSize: 10 // Increased page size for better UX
       });
       
       const newTasks = response.data.commits.flatMap((commit: Commit) => {
@@ -84,7 +87,7 @@ function Dashboard() {
       });
 
       setTasks(prev => page === 1 ? newTasks : [...prev, ...newTasks]);
-      setHasMore(newTasks.length === 5);
+      setHasMore(newTasks.length === 10); // Check if we got a full page of results
     } catch (error) {
       console.error('Error loading tasks:', error);
     } finally {
@@ -92,29 +95,38 @@ function Dashboard() {
     }
   }, [selectedOrg, selectedProject, isTasksEnabled]);
 
-  // Load initial tasks when project is selected or tasks are enabled
-  useEffect(() => {
-    setCurrentPage(1);
-    setTasks([]);
-    if (isTasksEnabled) {
-      loadTasks(1);
+  const handleToggleTasks = useCallback(() => {
+    if (selectedProject) {
+      toggleProjectTasks(selectedOrg, selectedProject);
+      // Force a re-render by updating the tasks state
+      setTasks([]);
+      setCurrentPage(1);
+      if (isTasksEnabled) {
+        // If we're turning off tasks, clear the tasks
+        setTasks([]);
+      } else {
+        // If we're turning on tasks, load them
+        loadTasks(1);
+      }
     }
-  }, [selectedProject, isTasksEnabled, loadTasks]);
+  }, [selectedOrg, selectedProject, isTasksEnabled, loadTasks]);
 
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop <= clientHeight * 1.5 && !isLoadingTasks && hasMore) {
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingTasks && hasMore) {
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
       loadTasks(nextPage);
     }
   }, [currentPage, isLoadingTasks, hasMore, loadTasks]);
 
-  const handleToggleTasks = () => {
-    if (selectedProject) {
-      toggleProjectTasks(selectedOrg, selectedProject);
+  // Load initial tasks when project is selected or tasks are enabled
+  useEffect(() => {
+    setCurrentPage(1);
+    setTasks([]);
+    if (isTasksEnabled && selectedProject) {
+      loadTasks(1);
     }
-  };
+  }, [selectedProject, isTasksEnabled, loadTasks]);
 
   // Reset selected project when organization changes
   React.useEffect(() => {
@@ -186,8 +198,34 @@ function Dashboard() {
     setIsPlanSprintOpen(true);
   }
 
+  // Handle scroll to show/hide scroll top button
+  const handleScroll = useCallback(() => {
+    if (scrollContainerRef.current) {
+      setShowScrollTop(scrollContainerRef.current.scrollTop > 100);
+    }
+  }, []);
+
+  // Scroll to top function
+  const scrollToTop = useCallback(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  // Add scroll event listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
+
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-neutral-950">
       <Sidebar />
       <main className="flex-1 min-h-screen bg-[#101011] text-white p-0 flex flex-col relative">
         {/* Mini bar */}
@@ -205,41 +243,73 @@ function Dashboard() {
             )}
           </Button>
         </div>
-        {/* Project cards row */}
-        {isLoading ? (
-          <div className="px-8 py-6 text-neutral-400">Loading projects...</div>
-        ) : (
-          <>
-            <ProjectCards projects={projects} selected={selected} setSelected={setSelected} />
-            {selectedProject && (
-              <div className="px-8 py-4">
-                <Button
-                  onClick={handleToggleTasks}
-                  variant={isTasksEnabled ? "destructive" : "default"}
-                  className="w-full"
-                >
-                  {isTasksEnabled ? "Turn off Tasks for this project" : "Turn on Tasks for this project"}
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-        {/* Project tasks timeline */}
-        <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
-          <ProjectTasksTimeline
-            tasks={filteredTasks}
-            view={taskView}
-            onViewChange={setTaskView}
-            onJumpToDate={() => alert('Jump to a date clicked!')}
-            onAddTask={() => alert('Add a task clicked!')}
-            onEditTask={taskId => alert('Edit task: ' + taskId)}
-          />
-          {isLoadingTasks && (
-            <div className="text-center py-4 text-neutral-400">
-              Loading more tasks...
+        {/* Scrollable content area */}
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
+          {/* Project cards row */}
+          {isLoading ? (
+            <div className="px-8 py-6 text-neutral-400">Loading projects...</div>
+          ) : (
+            <>
+              <ProjectCards projects={projects} selected={selected} setSelected={setSelected} />
+              {selectedProject && (
+                <div className="px-8 py-2">
+                  {isTasksEnabled ? (
+                    <div className="flex items-center justify-end gap-2 text-sm text-neutral-400">
+                      <span>Task Tracking</span>
+                      <Switch
+                        checked={isTasksEnabled}
+                        onCheckedChange={handleToggleTasks}
+                        className="data-[state=checked]:bg-primary"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center">
+                      <Button
+                        onClick={handleToggleTasks}
+                        variant="outline"
+                        className="border-primary text-primary hover:bg-primary/10 hover:text-primary"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Pen className="w-4 h-4" />
+                          Enable Task Tracking
+                        </span>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+          {/* Project tasks timeline */}
+          {selectedProject && isTasksEnabled ? (
+            <div className="h-full">
+              <ProjectTasksTimeline
+                tasks={filteredTasks}
+                view={taskView}
+                onViewChange={setTaskView}
+                onJumpToDate={() => {}}
+                onAddTask={() => {}}
+                onEditTask={() => {}}
+                isLoading={isLoadingTasks}
+                onLoadMore={handleLoadMore}
+                hasMore={hasMore}
+              />
+            </div>
+          ) : (
+            <div className="p-8">
             </div>
           )}
         </div>
+        {/* Scroll to top button */}
+        <Button
+          onClick={scrollToTop}
+          className={`fixed bottom-8 right-8 w-12 h-12 rounded-full bg-primary hover:bg-primary/90 transition-all duration-300 shadow-lg ${
+            showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
+          }`}
+          size="icon"
+        >
+          <ArrowUp className="w-6 h-6" />
+        </Button>
         <PlanSprintModal
           isOpen={isPlanSprintOpen}
           onClose={() => setIsPlanSprintOpen(false)}
