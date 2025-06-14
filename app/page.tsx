@@ -5,6 +5,7 @@ import { HowItWorks } from "@/components/sections/how-it-works";
 import { TrustedBy } from "@/components/sections/trusted-by";
 import { Testimonials } from "@/components/sections/testimonials";
 import { Pricing } from "@/components/sections/pricing";
+import { ProductVideo } from "@/components/sections/product-video";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppStore, setIsAuthenticated } from "@/lib/store";
@@ -26,6 +27,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <HeroSection />
+      <ProductVideo />
       <HowItWorks />
       {/* <TrustedBy /> */}
       {/* <Testimonials /> */}
