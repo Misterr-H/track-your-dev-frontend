@@ -2,10 +2,12 @@ import { Store } from 'pullstate';
 
 interface AppState {
   selectedOrg: string;
+  isAuthenticated: boolean;
 }
 
 export const AppStore = new Store<AppState>({
   selectedOrg: '',
+  isAuthenticated: false,
 });
 
 export const setSelectedOrg = (org: string) => {
@@ -13,3 +15,9 @@ export const setSelectedOrg = (org: string) => {
     s.selectedOrg = org;
   });
 }; 
+
+export const setIsAuthenticated = (isAuthenticated: boolean) => {
+  AppStore.update((s) => {
+    s.isAuthenticated = isAuthenticated;
+  });
+};

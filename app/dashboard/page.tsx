@@ -5,18 +5,19 @@ import Sidebar from '@/components/sidebar';
 import { ProjectCards, Project } from '@/components/ProjectCards';
 import { ProjectTasksTimeline, Task } from '@/components/ProjectTasksTimeline';
 import { Button } from '@/components/ui/button';
-import { Bell, Pen, ArrowUp } from 'lucide-react';
+import { Bell, Pen, ArrowUp, Loader2 } from 'lucide-react';
 import { PlanSprintModal } from '@/components/PlanSprintModal';
-import { useOrgsAndRepos } from '@/services/queries';
+import { useOrgsAndRepos, useToggleTasks } from '@/services/queries';
 import { AppStore, setSelectedOrg } from '@/lib/store';
 import { useStoreState } from 'pullstate';
 import { fetchTasks } from '@/services/apis/dashboardApis';
-import { isProjectTasksEnabled, toggleProjectTasks } from '@/lib/projectPreferences';
 import { Commit, CommitTask } from '@/types/dashboard';
 import { Switch } from '@/components/ui/switch';
+import { useRouter } from 'next/navigation';
 
 function Dashboard() {
-  const { data, isLoading } = useOrgsAndRepos();
+  const { data, isLoading, isFetching } = useOrgsAndRepos();
+  const toggleTasksMutation = useToggleTasks();
   const [selected, setSelected] = useState(0);
   const [shortcutLabel, setShortcutLabel] = useState('');
   const [isMac, setIsMac] = useState(false);
@@ -29,9 +30,28 @@ function Dashboard() {
   const [isLoadingTasks, setIsLoadingTasks] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  
+  // Local state to track enabled repositories
+  const [enabledRepos, setEnabledRepos] = useState<Set<number>>(new Set());
+  
+  // Initialize enabled repos from API data
+  useEffect(() => {
+    if (data?.data?.results) {
+      const initialEnabledRepos = new Set<number>();
+      data.data.results.forEach(org => {
+        org.repositories.forEach(repo => {
+          if (repo.enabledForTasks) {
+            initialEnabledRepos.add(repo.id);
+          }
+        });
+      });
+      setEnabledRepos(initialEnabledRepos);
+    }
+  }, [data?.data?.results]);
 
-  // Convert repositories to projects based on selected organization
-  const projects: Project[] = React.useMemo(() => {
+  // Get base projects data without enabled state
+  const baseProjects = React.useMemo(() => {
     if (!data?.data?.results) return [];
     
     const orgData = data.data.results.find(result => result.organization.name === selectedOrg);
@@ -39,22 +59,31 @@ function Dashboard() {
     
     return orgData.repositories.map(repo => ({
       name: repo.name,
-      category: '' // Leaving category blank as requested
+      category: '', // Leaving category blank as requested
+      id: repo.id
     }));
   }, [data, selectedOrg]);
 
-  const selectedProject = projects[selected]?.name;
-  const isTasksEnabled = selectedProject ? isProjectTasksEnabled(selectedOrg, selectedProject) : false;
+  // Get the selected project with its enabled state
+  const selectedProject = React.useMemo(() => {
+    if (!baseProjects[selected]) return null;
+    return {
+      ...baseProjects[selected],
+      enabledForTasks: enabledRepos.has(baseProjects[selected].id)
+    };
+  }, [baseProjects, selected, enabledRepos]);
+
+  const isTasksEnabled = selectedProject?.enabledForTasks ?? false;
 
   // Filter tasks based on the current view
   const filteredTasks = tasks.filter(task => task.type === taskView);
 
   const loadTasks = useCallback(async (page: number) => {
-    if (!selectedProject || !isTasksEnabled) return;
+    if (!selectedProject?.name || !isTasksEnabled) return;
     
     setIsLoadingTasks(true);
     try {
-      const response = await fetchTasks(selectedOrg, selectedProject, {
+      const response = await fetchTasks(selectedOrg, selectedProject.name, {
         page,
         pageSize: 10 // Increased page size for better UX
       });
@@ -72,7 +101,7 @@ function Dashboard() {
             timestamp: commit.commitTime,
             developer: { name: commit.author, avatarUrl: '' },
             type: 'technical' as const,
-            project: selectedProject,
+            project: selectedProject.name,
           })),
           ...nonTechnicalTasks.map((task: CommitTask) => ({
             id: `${commit._id}-non-technical-${task.title}`,
@@ -81,7 +110,7 @@ function Dashboard() {
             timestamp: commit.commitTime,
             developer: { name: commit.author, avatarUrl: '' },
             type: 'non-technical' as const,
-            project: selectedProject,
+            project: selectedProject.name,
           }))
         ];
       });
@@ -97,19 +126,48 @@ function Dashboard() {
 
   const handleToggleTasks = useCallback(() => {
     if (selectedProject) {
-      toggleProjectTasks(selectedOrg, selectedProject);
-      // Force a re-render by updating the tasks state
-      setTasks([]);
-      setCurrentPage(1);
-      if (isTasksEnabled) {
-        // If we're turning off tasks, clear the tasks
+      const newEnabled = !isTasksEnabled;
+      
+      // Optimistically update local state
+      setEnabledRepos(prev => {
+        const next = new Set(prev);
+        if (newEnabled) {
+          next.add(selectedProject.id);
+        } else {
+          next.delete(selectedProject.id);
+        }
+        return next;
+      });
+
+      // If enabling tasks, start loading them immediately
+      if (newEnabled) {
         setTasks([]);
-      } else {
-        // If we're turning on tasks, load them
+        setCurrentPage(1);
         loadTasks(1);
+      } else {
+        setTasks([]);
       }
+
+      // Call toggle API in background
+      toggleTasksMutation.mutate(
+        { repoId: selectedProject.id.toString(), enabled: newEnabled },
+        {
+          onError: () => {
+            // Revert optimistic update on error
+            setEnabledRepos(prev => {
+              const next = new Set(prev);
+              if (!newEnabled) {
+                next.add(selectedProject.id);
+              } else {
+                next.delete(selectedProject.id);
+              }
+              return next;
+            });
+          }
+        }
+      );
     }
-  }, [selectedOrg, selectedProject, isTasksEnabled, loadTasks]);
+  }, [selectedProject, isTasksEnabled, toggleTasksMutation, loadTasks]);
 
   const handleLoadMore = useCallback(() => {
     if (!isLoadingTasks && hasMore) {
@@ -130,12 +188,12 @@ function Dashboard() {
 
   // Reset selected project when organization changes
   React.useEffect(() => {
-    if (projects.length > 0) {
+    if (baseProjects.length > 0) {
       setSelected(0); // Select first project by default
     } else {
       setSelected(-1); // No project selected when array is empty
     }
-  }, [selectedOrg, projects]);
+  }, [selectedOrg, baseProjects]);
 
   // Detect platform for shortcut label
   React.useEffect(() => {
@@ -181,7 +239,7 @@ function Dashboard() {
       if (e.key === 'ArrowLeft') {
         setSelected((prev) => (prev > 0 ? prev - 1 : prev));
       } else if (e.key === 'ArrowRight') {
-        setSelected((prev) => (prev < projects.length - 1 ? prev + 1 : prev));
+        setSelected((prev) => (prev < baseProjects.length - 1 ? prev + 1 : prev));
       }
 
       // Plan a sprint shortcut
@@ -192,7 +250,7 @@ function Dashboard() {
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMac, projects.length, data, selectedOrg]);
+  }, [isMac, baseProjects.length, data, selectedOrg]);
 
   function handlePlanSprintShortcut() {
     setIsPlanSprintOpen(true);
@@ -224,6 +282,21 @@ function Dashboard() {
     }
   }, [handleScroll]);
 
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      const response = await fetch('/api/auth/verify-github');
+      const data = await response.json();
+      console.log(data);
+      if(data.authenticated === false) {
+        router.push('/');
+      }
+    };
+    checkAuthentication();
+  }, [router]);
+
+  // Add a computed loading state that considers both operations
+  const isTaskToggleLoading = toggleTasksMutation.isPending || isFetching;
+
   return (
     <div className="flex h-screen bg-neutral-950">
       <Sidebar />
@@ -245,32 +318,51 @@ function Dashboard() {
         </div>
         {/* Scrollable content area */}
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
-          {/* Project cards row */}
           {isLoading ? (
             <div className="px-8 py-6 text-neutral-400">Loading projects...</div>
           ) : (
             <>
-              <ProjectCards projects={projects} selected={selected} setSelected={setSelected} />
+              <ProjectCards 
+                projects={baseProjects.map(project => ({
+                  ...project,
+                  enabledForTasks: enabledRepos.has(project.id)
+                }))} 
+                selected={selected} 
+                setSelected={setSelected} 
+              />
               {selectedProject && (
                 <div className="px-8 py-2">
                   {isTasksEnabled ? (
                     <div className="flex items-center justify-end gap-2 text-sm text-neutral-400">
                       <span>Task Tracking</span>
-                      <Switch
-                        checked={isTasksEnabled}
-                        onCheckedChange={handleToggleTasks}
-                        className="data-[state=checked]:bg-primary"
-                      />
+                      <div className="relative">
+                        <Switch
+                          checked={isTasksEnabled}
+                          onCheckedChange={handleToggleTasks}
+                          className="data-[state=checked]:bg-primary"
+                          disabled={isTaskToggleLoading}
+                        />
+                        {isTaskToggleLoading && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/50 rounded-md">
+                            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center">
                       <Button
                         onClick={handleToggleTasks}
                         variant="outline"
-                        className="border-primary text-primary hover:bg-primary/10 hover:text-primary"
+                        className="border-primary text-primary hover:bg-primary/10 hover:text-primary relative"
+                        disabled={isTaskToggleLoading}
                       >
                         <span className="flex items-center gap-2">
-                          <Pen className="w-4 h-4" />
+                          {isTaskToggleLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Pen className="w-4 h-4" />
+                          )}
                           Enable Task Tracking
                         </span>
                       </Button>

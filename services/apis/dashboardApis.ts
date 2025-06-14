@@ -26,3 +26,10 @@ export const fetchTasks = async (
   const response = await axiosInstance.get(`/api/commits/${orgName}/${repoName}${queryString}`);
   return response.data;
 }
+
+export const toggleTasks = async (repoId: string, enabled: boolean): Promise<void> => {
+  await axiosInstance.post('/api/toggle-tasks', {
+    repoId,
+    enabled,
+  });
+};

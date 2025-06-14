@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { fetchOrgsAndRepos, fetchTasks } from './apis/dashboardApis';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchOrgsAndRepos, fetchTasks, toggleTasks } from './apis/dashboardApis';
 import { DashboardResponse, TaskResponse } from '@/types/dashboard';
 
 export const QUERY_KEYS = {
@@ -31,5 +31,12 @@ export function useTasks(orgName: string, repoName: string, options?: {
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
     refetchOnWindowFocus: true,
     refetchOnMount: true,
+  });
+}
+
+export function useToggleTasks() {
+  return useMutation({
+    mutationFn: ({ repoId, enabled }: { repoId: string; enabled: boolean }) => 
+      toggleTasks(repoId, enabled)
   });
 }

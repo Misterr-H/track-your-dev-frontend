@@ -15,6 +15,7 @@ export interface Repository {
   defaultBranch: string;
   createdAt: string;
   updatedAt: string;
+  enabledForTasks: boolean;
 }
 
 export interface OrganizationStats {

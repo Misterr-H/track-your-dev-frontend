@@ -5,6 +5,8 @@ import { Smartphone, Box, Globe, Server, ChevronLeft, ChevronRight } from 'lucid
 export type Project = {
   name: string;
   category: string;
+  id: number;
+  enabledForTasks: boolean;
 };
 
 type ProjectCardsProps = {

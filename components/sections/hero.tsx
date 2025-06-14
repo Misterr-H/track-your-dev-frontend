@@ -5,10 +5,13 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ArrowRight, Play, Github } from "lucide-react";
 import Typewriter from 'typewriter-effect';
+import { AppStore } from "@/lib/store";
+import { useRouter } from "next/navigation";
 
 export function HeroSection() {
   const heroRef = useRef<HTMLDivElement>(null);
-  
+  const isAuthenticated = AppStore.useState(s => s.isAuthenticated);
+  const router = useRouter();
   const scrollToNextSection = () => {
     const nextSection = heroRef.current?.nextElementSibling;
     if (nextSection) {
@@ -65,7 +68,11 @@ export function HeroSection() {
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
             <Button onClick={() => {
-              window.open(`https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}&scope=user:email&state=abc`, "_self");
+              if (isAuthenticated) {
+                router.push('/dashboard');
+              } else {
+                window.open(`https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}&scope=user:email&state=abc`, "_self");
+              }
             }} size="lg" className="text-lg group">
               <Github className="mr-2 h-5 w-5" />
               Use it now (10s)

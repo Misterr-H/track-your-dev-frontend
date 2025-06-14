@@ -7,10 +7,11 @@ import { Testimonials } from "@/components/sections/testimonials";
 import { Pricing } from "@/components/sections/pricing";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AppStore, setIsAuthenticated } from "@/lib/store";
 
 export default function Home() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const isAuthenticated = AppStore.useState(s => s.isAuthenticated);
 
   useEffect(() => {
     const checkAuthentication = async () => {
@@ -18,9 +19,6 @@ export default function Home() {
       const data = await response.json();
       console.log(data);
       setIsAuthenticated(data.authenticated);
-      if (data.authenticated) {
-        router.push('/dashboard');
-      }
     };
     checkAuthentication();
   }, [router]);
