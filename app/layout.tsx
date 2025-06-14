@@ -40,6 +40,7 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
   const isDashboard = pathname === '/dashboard';
+  const isDemo = pathname === '/demo';
 
   return (
     <html lang="en" suppressHydrationWarning className="dark">
@@ -54,9 +55,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryClientProvider client={queryClient}>
-            {!isDashboard && <Header />}
+            {!isDashboard && !isDemo && <Header />}
             <main>{children}</main>
-            {!isDashboard && <Footer />}
+            {!isDashboard && !isDemo && <Footer />}
             <Toaster />
           </QueryClientProvider>
         </ThemeProvider>
