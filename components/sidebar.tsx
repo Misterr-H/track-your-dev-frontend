@@ -2,7 +2,7 @@ import React from "react";
 import { LogoIcon } from "@/components/ui/logo";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Settings, User, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Plus, Settings, User, ArrowUp, ArrowDown, CreditCard } from "lucide-react";
 import { useOrgsAndRepos } from "@/services/queries";
 import { Organization } from "@/types/dashboard";
 import { AppStore, setSelectedOrg } from "@/lib/store";
@@ -72,22 +72,33 @@ export default function Sidebar() {
               </span>
               <span>to switch orgs</span>
             </div>
+            <div className="px-2 py-1.5 text-xs text-neutral-400 flex items-center gap-1">
+              <button 
+                onClick={() => {
+                  window.open('https://github.com/apps/trackyourdev/installations/new', '_blank');
+                }} 
+                className="hover:text-white transition-colors duration-200 flex items-center gap-1"
+              >
+                <Settings className="w-3 h-3 text-white" />
+                <span className="text-white">Manage Organizations</span>
+              </button>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
         <div className="flex-1" />
-        <Button variant="ghost" size="icon" className="text-white hover:bg-neutral-900">
+        {/* <Button variant="ghost" size="icon" className="text-white hover:bg-neutral-900">
           <Search className="w-5 h-5" />
         </Button>
         <Button variant="ghost" size="icon" className="text-white hover:bg-neutral-900">
           <Plus className="w-5 h-5" />
-        </Button>
+        </Button> */}
       </div>
       {/* Sidebar Options */}
       <nav className="flex-1 flex flex-col gap-1 px-2 py-4">
-        <SidebarOption icon={<User className="w-5 h-5" />} label="Profile" />
-        <SidebarOption icon={<Settings className="w-5 h-5" />} label="Settings" />
-        <SidebarOption icon={<Search className="w-5 h-5" />} label="Search" />
-        <SidebarOption icon={<Plus className="w-5 h-5" />} label="Create" />
+        {/* <SidebarOption icon={<User className="w-5 h-5" />} label="Profile" /> */}
+        <SidebarOption icon={<CreditCard className="w-5 h-5" />} label="Manage Billing" />
+        {/* <SidebarOption icon={<Search className="w-5 h-5" />} label="Search" /> */}
+        {/* <SidebarOption icon={<Plus className="w-5 h-5" />} label="Create" /> */}
       </nav>
       <div className="px-4 py-4 border-t border-neutral-800 text-xs text-neutral-400">© 2025 TrackYourDev</div>
     </aside>

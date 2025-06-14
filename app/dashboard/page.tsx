@@ -303,9 +303,9 @@ function Dashboard() {
       <main className="flex-1 min-h-screen bg-[#101011] text-white p-0 flex flex-col relative">
         {/* Mini bar */}
         <div className="flex justify-end items-center h-16 px-8 border-b border-neutral-800">
-          <Button variant="ghost" size="icon" className="text-white mr-2">
+          {/* <Button variant="ghost" size="icon" className="text-white mr-2">
             <Bell className="w-5 h-5" />
-          </Button>
+          </Button> */}
           <Button className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md bg-neutral-800"
             onClick={handlePlanSprintShortcut}
           >

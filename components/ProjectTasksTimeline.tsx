@@ -72,16 +72,16 @@ export function ProjectTasksTimeline({
           />
           <span className="text-xs text-neutral-400">Non-Technical View</span>
         </div>
-        <Button size="sm" variant="outline" className="ml-4" onClick={onJumpToDate}>
+        {/* <Button size="sm" variant="outline" className="ml-4" onClick={onJumpToDate}>
           Jump to a date
-        </Button>
-        <button
+        </Button> */}
+        {/* <button
           type="button"
           className="ml-2 px-2 py-1 text-xs text-primary hover:underline focus:outline-none bg-transparent border-none"
           onClick={onAddTask}
         >
           + Add a task
-        </button>
+        </button> */}
       </div>
       {/* Timeline */}
       <div className="relative">
@@ -115,14 +115,14 @@ export function ProjectTasksTimeline({
                         {/* Div B: right side */}
                         <div className="flex flex-col items-center ml-auto min-w-[48px] justify-center">
                           <span className="text-xs text-neutral-400 whitespace-nowrap mb-1">{formatTime(task.timestamp)}</span>
-                          <button
+                          {/* <button
                             type="button"
                             className="p-1 rounded hover:bg-neutral-800 focus:outline-none mt-3"
                             onClick={() => onEditTask && onEditTask(task.id)}
                             title="Edit task"
                           >
                             <Pen className="w-4 h-4 text-white" />
-                          </button>
+                          </button> */}
                         </div>
                       </div>
                     </div>
