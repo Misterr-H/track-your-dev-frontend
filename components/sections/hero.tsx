@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ArrowRight, Play, Github } from "lucide-react";
+import { ChevronDown, ArrowRight, Play, Github, MessageCircle } from "lucide-react";
 import Typewriter from 'typewriter-effect';
 import { AppStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
@@ -80,6 +80,11 @@ export function HeroSection() {
             </Button>
             <Button size="lg" variant="outline" className="text-lg group" onClick={() => router.push('/demo')}>
               See demo
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            <Button size="lg" variant="outline" className="text-lg group" onClick={() => window.open("https://wa.me/919896039378?text=Hi%20Himanshu,%20I%20am%20interested%20in%20your%20product%20and%20would%20like%20to%20know%20more%20about%20it.", "_blank")}>
+              <MessageCircle className="mr-2 h-5 w-5" />
+              Talk to Founder {':)'}
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
