@@ -12,6 +12,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { LogoPng } from "./ui/logo-png";
+import { AppStore } from "@/lib/store";
+import { useRouter } from "next/navigation";
 
 const navItems = [
   { name: "Discord", href: "https://discord.gg/rtGrJ2n2Gz" },
@@ -22,7 +24,8 @@ const navItems = [
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
-
+  const isAuthenticated = AppStore.useState(s => s.isAuthenticated);
+  const router = useRouter();
   // Track scroll position to change header background
   useEffect(() => {
     const handleScroll = () => {
@@ -63,9 +66,15 @@ export function Header() {
             Sign In
           </Button>
           <Button>Get Started</Button> */}
-          <Button variant="outline" className="bg-white text-black">
-            Coming Soon
-          </Button>
+          {isAuthenticated ? (
+            <Button variant="outline" className="bg-white text-black" onClick={() => router.push('/dashboard')}>
+              Open app
+            </Button>
+          ) : (
+            <Button variant="outline" className="bg-white text-black">
+              Login
+            </Button>
+          )}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">

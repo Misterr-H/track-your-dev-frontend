@@ -1,6 +1,7 @@
 'use client'
 import './globals.css';
 import { Inter as FontSans } from 'next/font/google';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Header } from '@/components/header';
@@ -35,6 +36,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   Clarity.init('rvr9r43lu1');
+  const pathname = usePathname();
+  const isDashboard = pathname === '/dashboard';
+  const isDemo = pathname === '/demo';
+
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <body className={cn(
@@ -48,9 +53,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryClientProvider client={queryClient}>
-            <Header />
+            {!isDashboard && !isDemo && <Header />}
             <main>{children}</main>
-            <Footer />
+            {!isDashboard && !isDemo && <Footer />}
             <Toaster />
           </QueryClientProvider>
         </ThemeProvider>
