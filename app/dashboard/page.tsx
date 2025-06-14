@@ -14,9 +14,11 @@ import { fetchTasks } from '@/services/apis/dashboardApis';
 import { Commit, CommitTask } from '@/types/dashboard';
 import { Switch } from '@/components/ui/switch';
 import { useRouter } from 'next/navigation';
+import { SubscriptionModal } from '@/components/SubscriptionModal';
+import { AxiosError } from 'axios';
 
 function Dashboard() {
-  const { data, isLoading, isFetching } = useOrgsAndRepos();
+  const { data, isLoading, isFetching, error } = useOrgsAndRepos();
   const toggleTasksMutation = useToggleTasks();
   const [selected, setSelected] = useState(0);
   const [shortcutLabel, setShortcutLabel] = useState('');
@@ -297,6 +299,15 @@ function Dashboard() {
   // Add a computed loading state that considers both operations
   const isTaskToggleLoading = toggleTasksMutation.isPending || isFetching;
 
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+
+  // Add this effect to handle 403 errors
+  useEffect(() => {
+    if (error instanceof AxiosError && error.response?.status === 403 && error.response?.data?.message === "Subscription required to access this feature") {
+      setShowSubscriptionModal(true);
+    }
+  }, [error]);
+
   return (
     <div className="flex h-screen bg-neutral-950">
       <Sidebar />
@@ -407,6 +418,10 @@ function Dashboard() {
           onClose={() => setIsPlanSprintOpen(false)}
         />
       </main>
+      <SubscriptionModal
+        isOpen={showSubscriptionModal}
+        onClose={() => setShowSubscriptionModal(false)}
+      />
     </div>
   );
 }

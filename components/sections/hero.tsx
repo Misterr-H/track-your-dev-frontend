@@ -78,16 +78,16 @@ export function HeroSection() {
               Use it now (10s)
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button size="lg" variant="outline" className="text-lg group">
-              See how it works
-              <Play className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <Button size="lg" variant="outline" className="text-lg group" onClick={() => router.push('/demo')}>
+              See demo
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </motion.div>
         
         {/* Scroll indicator */}
         <motion.div 
-          className="absolute -bottom-48 left-1/2 -translate-x-1/2 cursor-pointer"
+          className="absolute -bottom-40 left-1/2 -translate-x-1/2 cursor-pointer"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5 }}

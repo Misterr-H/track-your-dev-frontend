@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 bg-muted/30">
+    <section id="how-it-works" className="py-20 flex items-center justify-center mt-5 bg-muted/30">
       <div className="container px-4 md:px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
