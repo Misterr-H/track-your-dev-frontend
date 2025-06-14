@@ -1,9 +1,11 @@
 import React from 'react';
 import VideoJS from '../VideoJS';
-import type Player from 'video.js';
+import videojs from 'video.js';
+
+type VideoJSPlayer = ReturnType<typeof videojs>;
 
 export const ProductVideo = () => {
-  const playerRef = React.useRef<Player | null>(null);
+  const playerRef = React.useRef<VideoJSPlayer | null>(null);
 
   const videoJsOptions = {
     autoplay: true,
@@ -17,7 +19,7 @@ export const ProductVideo = () => {
     }]
   };
 
-  const playerReady = (player: Player) => {
+  const playerReady = (player: VideoJSPlayer) => {
     playerRef.current = player;
     player.on('waiting', () => {
       console.log('player is waiting');

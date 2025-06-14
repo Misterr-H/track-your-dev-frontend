@@ -2,14 +2,21 @@ import React from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
-export const VideoJS = (props) => {
-  const videoRef = React.useRef(null);
-  const playerRef = React.useRef(null);
+type VideoJSPlayer = ReturnType<typeof videojs>;
+
+interface VideoJSProps {
+  options: any;
+  onReady?: (player: VideoJSPlayer) => void;
+}
+
+export const VideoJS: React.FC<VideoJSProps> = (props) => {
+  const videoRef = React.useRef<HTMLDivElement>(null);
+  const playerRef = React.useRef<VideoJSPlayer | null>(null);
   const {options, onReady} = props;
 
   React.useEffect(() => {
     // Make sure Video.js player is only initialized once
-    if (!playerRef.current) {
+    if (!playerRef.current && videoRef.current) {
       // The Video.js player needs to be _inside_ the component el for React 18 Strict Mode. 
       const videoElement = document.createElement("video-js");
 
@@ -23,7 +30,7 @@ export const VideoJS = (props) => {
 
     // You could update an existing player in the `else` block here
     // on prop change, for example:
-    } else {
+    } else if (playerRef.current) {
       const player = playerRef.current;
 
       player.autoplay(options.autoplay);
