@@ -9,7 +9,7 @@ export const ProductVideo = () => {
 
   const videoJsOptions = {
     autoplay: true,
-    muted: true,
+    muted: false,
     controls: true,
     responsive: true,
     fluid: true,
