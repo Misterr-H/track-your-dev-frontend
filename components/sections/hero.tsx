@@ -71,7 +71,7 @@ export function HeroSection() {
           </div>
           
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-            A simple tool with one click setup and deeper productivity insights, know what your devs are doing
+            Fully Open Source tool to tell you the tasks your developers have done in projects.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
