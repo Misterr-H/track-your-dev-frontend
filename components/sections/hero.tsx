@@ -40,6 +40,14 @@ export function HeroSection() {
           transition={{ duration: 0.5 }}
           className="space-y-6 max-w-4xl mx-auto"
         >
+          <div className="flex flex-col items-center gap-4">
+            <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-4 py-2 rounded-full text-sm font-medium">
+              Trusted by 50+ developers and managers
+            </div>
+            <div className="text-muted-foreground text-sm">
+              3-day free trial • No credit card required
+            </div>
+          </div>
           <div className="h-[200px] flex items-center justify-center">
             <Typewriter
               options={{
@@ -75,13 +83,13 @@ export function HeroSection() {
               }
             }} size="lg" className="text-lg group">
               <Github className="mr-2 h-5 w-5" />
-              Use it now (10s)
+              Start free trial (10s)
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button size="lg" variant="outline" className="text-lg group" onClick={() => router.push('/demo')}>
+            {/* <Button size="lg" variant="outline" className="text-lg group" onClick={() => router.push('/demo')}>
               See demo
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            </Button> */}
             <Button size="lg" variant="outline" className="text-lg group" onClick={() => window.open("https://wa.me/919896039378?text=Hi%20Himanshu,%20I%20am%20interested%20in%20your%20product%20and%20would%20like%20to%20know%20more%20about%20it.", "_blank")}>
               <MessageCircle className="mr-2 h-5 w-5" />
               Talk to Founder {':)'}
